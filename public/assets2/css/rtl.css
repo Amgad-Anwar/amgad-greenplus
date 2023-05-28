@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
+.rtl body{
+    direction: rtl !important;
+    font-family: 'Cairo', sans-serif !important;
+}
+.rtl a,option,h1,h2,h3,h4,h5,h6{
+    font-family: 'Cairo', sans-serif !important;
+}
+.rtl .dir{
+    direction: rtl !important;
+}
+.rtl .text-rtl{
+    text-align: right !important;
+}
+.rtl .mar{
+    margin-left: 10px !important;
+}

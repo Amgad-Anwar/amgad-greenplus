@@ -1,0 +1,333 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>Green Plus</title>
+
+    <link href="{{ asset('assets2/img/logo.png') }}" rel="icon">
+
+    <link rel="stylesheet" href="{{ asset('assets2/css/bootstrap.min.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('assets2/plugins/fontawesome/css/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets2/plugins/fontawesome/css/all.min.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('assets2/css/feather.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('assets2/plugins/fancybox/jquery.fancybox.min.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('assets2/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets2/css/rtl.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="main-wrapper">
+
+
+    @include('layout.header-top_rtl')
+
+    @include('layout.nav_site')
+
+
+
+    @if ($errors->any())
+
+    <div class="alert alert-danger">
+        @foreach ($errors->all() as $error )
+        <h2>{{ $error }}</h2>
+        @endforeach
+    </div>
+
+    @endif
+
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
+
+              @include('website.user.sidebar')
+                </div>
+
+                <div class="col-md-7 col-lg-8 col-xl-9">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <form action="{{ url('update_user_profile') }}" method="post" class="h-100" enctype="multipart/form-data">
+                                @csrf
+                                <div class="row form-row">
+                                    <div class="col-12 col-md-12">
+                                        <div class="form-group">
+                                            <div class="change-avatar">
+                                                <div class="profile-img">
+                                                    <img src="{{ url(Auth::user()['fullImage']) }}" alt="User Image">
+                                                </div>
+                                                <div class="upload-img">
+                                                    <div class="change-photo-btn">
+                                                        <span><i class="fa fa-upload"></i> Upload Photo</span>
+                                                        <input type="file"  name="image" class="upload">
+                                                    </div>
+                                                    <small class="form-text text-muted">Allowed JPG, GIF or PNG. Max
+                                                        size of 2MB</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Name</label>
+                                            <input type="text"  name="name" class="form-control" value="{{ auth()->user()->name }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Email</label>
+                                            <input type="email" class="form-control" name="email" value="{{ auth()->user()->email }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Language</label>
+                                            <select name="language"  style="direction: ltr;" class="form-select form-control">
+                                                @foreach ($languages as $language)
+                                                <option value="{{ $language->name }}" {{ $language->name == auth()->user()->language
+                                                ? 'selected' : '' }}>{{ $language->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Mobile</label>
+                                            <input type="text" name="phone" value="{{ auth()->user()->phone }}" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Date Of Birth</label>
+                                            <input name="dob" type="text" min="{{ Carbon\Carbon::now(env('timezone'))->format('d/m/Y') }}" class="@error('dob') is-invalid @enderror font-fira-sans form-control block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding border border-solid border-gray-300 transition ease-in-out m-0 focus:text-gray focus:outline-none active" placeholder="Select a date" data-mdb-toggle="datepicker" value="{{ auth()->user()->dob }}" />
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Gender</label>
+                                            <select style="direction: ltr;" name="gender" class="form-select form-control">
+                                                <option {{ auth()->user()->gender == 'male' ? 'selected' : '' }} value="male">{{
+                                                    __('Male') }}</option>
+                                                    <option {{ auth()->user()->gender == 'female' ? 'selected' : '' }} value="female">{{
+                                                    __('Female') }}</option>
+                                                    <option {{ auth()->user()->gender == 'other' ? 'selected' : '' }} value="other">{{
+                                                    __('Other') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="submit-section">
+                                    <button type="submit" class="btn btn-primary submit-btn">Save Changes</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    @include('layout.footer_site')
+
+
+
+
+
+
+{{-- @extends('layout.mainlayout',['activePage' => 'user'])
+
+@section('css')
+<link rel="stylesheet" href="{{ url('assets/css/intlTelInput.css') }}" />
+<style>
+    .sidebar li.active {
+        background: linear-gradient(45deg, #00000000 50%, #f4f2ff);
+        border-left: 2px solid var(--site_color);
+    }
+
+    .iti {
+        display: block !important;
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="xl:w-3/4 mx-auto">
+    <div class="xxsm:mx-5 xl:mx-0 2xl:mx-0 pt-10">
+        <div class="flex h-full mb-20 xxsm:flex-col sm:flex-col xmd:flex-row xmd:space-x-5">
+            <div class="2xl:w-1/5 1xl:w-1/5 xl:w-1/4 xlg:w-80 lg:w-72 xxmd:w-72 !xmd:w-72 md:w-72 h-auto">
+                @include('website.user.userSidebar',['active' => 'profileSetting'])
+            </div>
+            <div class="w-full md:w-full xxmd:w-full xmd:w-80 lg:w-2/3 xlg:w-2/3 1xl:w-full 2xl:w-full sm:ml-0 xxsm:ml-0 shadow-lg overflow-hidden p-5 mt-10 2xl:mt-0 xmd:mt-0">
+                <form action="{{ url('update_user_profile') }}" method="post" class="h-100" enctype="multipart/form-data">
+                    @csrf
+                    <div class="change-avtar">
+                        <div class="avatar-upload relative">
+                            <div class="avatar-edit absolute">
+                                <input type='file' name="image" id="image" class="d-none" accept=".png, .jpg, .jpeg" />
+                                <label for="image" class="" data-bs-toggle="tooltip" data-bs-placement="right" title="Select new profile pic"></label>
+                            </div>
+                            <div class="avatar-preview">
+                                <div id="imagePreview" style="background-image: url({{ 'images/upload/'.auth()->user()->image }});"></div>
+                            </div>
+                            <div class="mt-2">
+                                <p class="text-center patient-image">{{ __('Patient Image') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex xxsm:flex-col sm:flex-row justify-center w-full">
+                        <div class="mb-3 sm:w-1/2 xxsm:w-full">
+                            <label for="name" class="form-label inline-block mb-2 text-gray">{{ __('Name')
+                            }}</label>
+                            <input type="text" name="name" value="{{ auth()->user()->name }}" class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray focus:outline-none" id="name" placeholder="{{ __('Name') }}" />
+                        </div>
+                        <div class="mb-3 sm:w-1/2 xxsm:w-full sm:ml-2 xxsm:ml-0">
+                            <label for="email" class="form-label inline-block mb-2 text-gray">{{ __('Email')
+                            }}</label>
+                            <input type="email" name="email" value="{{ auth()->user()->email }}" class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray focus:outline-none" id="email" placeholder="{{ __('Email') }}" />
+                        </div>
+
+                    </div>
+                    <div class="flex xxsm:flex-col sm:flex-row justify-center w-full">
+                        <div class="mb-3 sm:w-1/2 xxsm:w-full">
+                            <label for="phoneNumber" class="form-label inline-block mb-2 text-gray">{{ __('Phone
+                            number') }}</label>
+                            <input type="text" name="phone" value="{{ auth()->user()->phone_code }}&nbsp;{{ auth()->user()->phone }}" class="phone form-control block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray focus:outline-none" id="phoneNumber" placeholder="{{ __('Phone number') }}" />
+                            <input type="hidden" name="phone_code" value="+91">
+                        </div>
+                        <div class="mb-3 sm:w-1/2 xxsm:w-full sm:ml-2 xxsm:ml-0">
+                            <label for="language" class="form-label inline-block mb-2 text-gray">{{ __('Language')
+                            }}</label>
+                            <div class="flex justify-center">
+                                <div class="mb-3 w-full">
+                                    <select name="language" class="form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding bg-no-repeat border
+                                    border-solid border-gray-light rounded transition ease-in-out m-0 focus:text-gray focus:outline-none" aria-label="Default select example">
+                                        @foreach ($languages as $language)
+                                        <option value="{{ $language->name }}" {{ $language->name == auth()->user()->language
+                                        ? 'selected' : '' }}>{{ $language->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex xxsm:flex-col sm:flex-row justify-center w-full">
+                        <div class="mb-3 sm:w-1/2 xxsm:w-full">
+                            <label for="dob" class="form-label inline-block mb-2 text-gray">{{ __('Date of birth')
+                            }}</label>
+                            <div class="datepicker relative mb-3" data-mdb-toggle-button="true">
+                                <input name="dob" type="text" min="{{ Carbon\Carbon::now(env('timezone'))->format('d/m/Y') }}" class="@error('dob') is-invalid @enderror font-fira-sans form-control block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding border border-solid border-gray-300 transition ease-in-out m-0 focus:text-gray focus:outline-none active" placeholder="Select a date" data-mdb-toggle="datepicker" value="{{ auth()->user()->dob }}" />
+                                @error('dob')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="mb-3 sm:w-1/2 xxsm:w-full sm:ml-2 xxsm:ml-0">
+                            <label for="language" class="form-label inline-block mb-2 text-gray">{{ __('Gender')
+                            }}</label>
+                            <div class="flex justify-center">
+                                <div class="mb-3 w-full">
+                                    <select name="gender" class="form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray  bg-clip-padding bg-no-repeat
+                                     border border-solid border-gray-light rounded transition ease-in-out m-0 focus:text-gray focus:outline-none
+                                     " aria-label="Default select example">
+                                        <option {{ auth()->user()->gender == 'male' ? 'selected' : '' }} value="male">{{
+                                        __('Male') }}</option>
+                                        <option {{ auth()->user()->gender == 'female' ? 'selected' : '' }} value="female">{{
+                                        __('Female') }}</option>
+                                        <option {{ auth()->user()->gender == 'other' ? 'selected' : '' }} value="other">{{
+                                        __('Other') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between w-full xxsm:flex-col msm:flex-row">
+                        <div class="w-full mb-4">
+                            <a class="px-6 py-3 border border-red text-white bg-red rounded-md font-medium text-xs leading-tight uppercase focus:outline-none
+                            focus:ring-0 transition duration-150 ease-in-out" href="javascript:void(0);" onclick="delete_account()">
+                                {{__("Delete Account")}}
+                            </a>
+                        </div>
+                        <div class="w-full mb-4 flex msm:justify-end xxsm:justify-start ">
+                            <button class="px-6 py-3 border border-primary text-white bg-primary rounded-md font-medium text-xs leading-tight uppercase focus:outline-none focus:ring-0 transition duration-150 ease-in-out" type="submit" id="button-addon3">
+                                {{__("Update")}}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@endsection
+
+@section('js')
+<script src="{{ url('assets/js/intlTelInput.min.js') }}"></script>
+<script>
+    const phoneInputField = document.querySelector(".phone");
+    const phoneInput = window.intlTelInput(phoneInputField, {
+        preferredCountries: ["us", "co", "in", "de"],
+        initialCountry: "in",
+        separateDialCode: true,
+        utilsScript: "{{url('assets/js/utils.js')}}",
+    });
+    phoneInputField.addEventListener("countrychange", function() {
+        var phone_code = $('.phone').find('.iti__selected-dial-code').text();
+        $('input[name=phone_code]').val('+' + phoneInput.getSelectedCountryData().dialCode);
+    });
+
+    $(document).ready(function() {
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var type = $('#imagePreview').attr('data-id');
+                    var fileName = document.getElementById("image").value;
+                    var idxDot = fileName.lastIndexOf(".") + 1;
+                    var extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
+                    if (extFile == "jpg" || extFile == "jpeg" || extFile == "png") {
+                        $('#imagePreview').css('background-image', 'url(' + e.target.result + ')');
+                        $('#imagePreview').hide();
+                        $('#imagePreview').fadeIn(650);
+                    } else {
+                        $('input[type=file]').val('');
+                        alert("Only jpg/jpeg and png files are allowed!");
+                        if (type == 'add') {
+                            $('#imagePreview').css('background-image', 'url()');
+                            $('#imagePreview').hide();
+                            $('#imagePreview').fadeIn(650);
+                        }
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        $("#image").change(function() {
+            readURL(this);
+        });
+    });
+</script>
+@endsection --}}
