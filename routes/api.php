@@ -9,6 +9,49 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserApiController;
 use App\Models\User;
 
+
+
+use App\Http\Controllers\SuperAdmin\CustomController;
+use App\Models\Appointment;
+use App\Models\Banner;
+use App\Models\Blog;
+use App\Models\Category;
+use App\Models\Doctor;
+use App\Models\DoctorSubscription;
+use App\Models\Faviroute;
+use App\Models\Hospital;
+use App\Models\Review;
+use App\Models\Setting;
+use App\Models\Treatments;
+use App\Models\WorkingHour;
+use Carbon\Carbon;
+use App\Models\HospitalGallery;
+use App\Models\Lab;
+use App\Models\LabSettle;
+use App\Models\LabWorkHours;
+use App\Models\Language;
+use App\Models\Medicine;
+use App\Models\MedicineCategory;
+use App\Models\MedicineChild;
+use App\Models\Offer;
+use App\Models\Pathology;
+use App\Models\PathologyCategory;
+use App\Models\Pharmacy;
+use App\Models\PharmacySettle;
+use App\Models\PharmacyWorkingHour;
+use App\Models\Prescription;
+use App\Models\PurchaseMedicine;
+use App\Models\Radiology;
+use App\Models\RadiologyCategory;
+use App\Models\Report;
+
+use App\Models\UserAddress;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -105,13 +148,13 @@ Route::middleware('auth:api')->group(function ()
        Route::get('notification_amgad',[DoctorApiController::class,'amgadapiNotification']);
     Route::post('purchase_subscrption',[DoctorApiController::class,'apiPurchaseSubscription']);
     Route::post('doctor_update_image',[DoctorApiController::class,'apiUpdateImage']);
-    Route::get('cancel_appointment',[DoctorApiController::class,'apiCancelAppointment']); 
-      Route::get('cancel_appointment_amgad',[DoctorApiController::class,'amgadapiCancelAppointment']); 
+    Route::get('cancel_appointment',[DoctorApiController::class,'apiCancelAppointment']);
+      Route::get('cancel_appointment_amgad',[DoctorApiController::class,'amgadapiCancelAppointment']);
     Route::post('doctor_change_password',[DoctorApiController::class,'apiDoctorChangePassword']);
     Route::post('/generateDoctorAgoraToken',[DoctorApiController::class,'apiDoctorGenerateToken']);
-    
-    
-    
+
+
+
 
 
 });
@@ -123,9 +166,9 @@ Route::post('update_doctor_amgad',[DoctorApiController::class,'apiUpdateDoctoram
   Route::get('filter',[DoctorApiController::class,'filter']);
     //  Route::post('update_doctor_amgad',[DoctorApiController::class,'apiUpdateDoctor']);
  //   Route::get('appointments',[UserApiController::class,'apiAppointments']);
- 
-     
-    
+
+
+
 // test chat
 Route::apiResource('chat', App\Http\Controllers\ChatController::class)->only(['index','store','show']);
 Route::apiResource('chat_message', ChatMessageController::class)->only(['index','store']);
@@ -136,7 +179,7 @@ Route::get('chat',[ App\Http\Controllers\ChatController::class,'show' ]);
 Route::get('chat_message/store',[ App\Http\Controllers\ChatMessageController::class,'store' ]);
 Route::get('chat_message',[ App\Http\Controllers\ChatMessageController::class,'index' ]);
 
- 
+
 
 Route::get('categories/{treatment_id}',[DoctorApiController::class,'apiCategory']);
 Route::get('hospitals',[DoctorApiController::class,'apiHospital']);
@@ -178,6 +221,132 @@ Route::get('push_notification', function(Request $request){
 
 
 } );
- 
- 
- 
+
+
+
+
+//labs=================================
+//===// api 1 to get lab and main data
+Route::get('/lab_test/{id}',function($id ){
+    $lab = Lab::find($id);
+    $pathologyCategories = PathologyCategory::where('status',1)->get();
+    $doctors = Doctor::whereStatus(1)->get();
+    $date = Carbon::now(env('timezone'))->format('Y-m-d');
+    $timeslots = (new CustomController)->LabtimeSlot($lab->id,$date);
+    $radiology_categories = RadiologyCategory::whereStatus(1)->get();
+    $setting = Setting::first();
+
+    return response(['success' => true , 'data' =>  [
+        'lab' =>   $lab ,
+        'pathologyCategories' =>   $pathologyCategories ,
+        'setting' =>   $setting ,
+        'doctors' =>   $doctors ,
+        'timeslots' =>   $timeslots ,
+        'radiology_categories' =>   $radiology_categories ,
+    ]]);
+});
+
+
+//===// api 2 to get related radiology options
+Route::get('/radiology_category_wise/{id}/{lab_id}',function($id , $lab_id){
+    $pathology = Radiology::where([['radiology_category_id',$id],['lab_id',$lab_id],['status',1]])->get();
+    return response(['success' => true , 'data' => $pathology]);
+});
+
+//===// api 2 to get related pathology options
+Route::get('/pathology_category_wise/{id}/{lab_id}',function($id , $lab_id){
+    $pathology = Pathology::where([['pathology_category_id',$id],['lab_id',$lab_id],['status',1]])->get();
+    return response(['success' => true , 'data' => $pathology]);
+});
+
+//===// api 2 to get hours avalible
+Route::get('/lab_timeslot',function(Request $request){
+    $timeslots = (new CustomController)->LabtimeSlot($request->lab_id,$request->date);
+    return response(['success' => true , 'data'  => $timeslots , 'date' => Carbon::parse($request->date)->format('d M')]);
+
+});
+
+//===// api 2 to book lab test report
+Route::post('/test_report',function(Request $request)   {
+    $request->validate([
+        'patient_name' => 'required',
+        'age' => 'required|numeric',
+        'phone_no' => 'required|numeric',
+        'gender' => 'required',
+        'date' => 'required',
+        'time' => 'required',
+        'doctor_id' => 'required_if:prescription_required,1',
+        'prescription' => 'required_if:prescription_required,1'
+    ]);
+    $data = $request->all();
+    $lab = Lab::find($request->lab_id);
+    $data['report_id'] =  '#' . rand(100000, 999999);
+    if(isset($data['prescription']))
+    {
+        $test = explode('.', $data['prescription']);
+        $ext = end($test);
+        $name = uniqid() . '.' . $data['prescription']->getClientOriginalExtension(); ;
+        $location = public_path() . '/report_prescription/upload';
+        $data['prescription']->move($location,$name);
+        $data['prescription'] = $name;
+    }
+    $data['user_id'] = $request->user_id;
+    if(isset($data['pathology_id'])){
+        $data['pathology_id'] = implode(',',$data['pathology_id']);
+    }
+    if(isset($data['radiology_id'])){
+        $data['radiology_id'] = implode(',',$data['radiology_id']);
+    }
+    $data = array_filter($data, function($a) {return $a !== "";});
+    $report = Report::create($data);
+    $settle = array();
+
+    $com = $lab->commission * $request->amount;
+    $admin_commission = $com / 100;
+    $lab_commission = $request->amount - $admin_commission;
+
+    $settle['lab_id'] = $lab->id;
+    $settle['report_id'] = $report->id;
+    $settle['admin_amount'] = $admin_commission;
+    $settle['lab_amount'] = $lab_commission;
+    $settle['payment'] = $report->payment_status == 1 ? 1 : 0;
+    $settle['lab_status'] = 0;
+    LabSettle::create($settle);
+    return response(['success' => true]);
+});
+
+//===// api 2 to get hours avalible
+Route::get('/all_labs',function(){
+    $labs = Lab::all();
+    return response(['success' => true , 'data'  => $labs ]);
+
+});
+
+Route::get('/user/report/{user_id}',function($user_id){
+    $test_reports = Report::with('lab:id,name')->where('user_id',auth()->user()->id)->orderBy('id','DESC')->get();
+    $currency = Setting::first()->currency_symbol;
+    return response(['success' => true , 'data'  => [
+        'test_reports'=>$test_reports,
+        'currency'=>$currency,
+    ] ]);
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//endlabs================================
+
+

@@ -342,6 +342,7 @@ prev.addEventListener("click", () => {
   shoeStep();
 });
 
+//
 function getTime() {
     var date = new Date(a.dates[0]);
     date = moment(date).format('YYYY-MM-DD');
@@ -731,6 +732,7 @@ function displayDocDetails() {
     }
 }
 
+//amgad
 function report_book() {
     var formData = new FormData($('#testForm')[0]);
     var time = formData.getAll('time');
